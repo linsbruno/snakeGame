@@ -4,12 +4,44 @@ const ctx = canvas.getContext("2d");
 const size = 30; //definição do tamanho padrão de cada elemento da Snake
 
 const snake = [
-    { x: 200, y: 200},
-    { x: 230, y: 200}, //Array com cada "tamanho" da Snake
+    { x: 0, y: 0},
+     //Array com cada "tamanho" da Snake
 ];
 
-let direction
+const randomNumber = (min , max ) => {
+    return Math.round(Math.random() * (max - min) + min)
+}
 
+const randomPosition = () => {
+    const number = randomNumber(0 , canvas.width - size)
+    return Math.round(number/30) * 30
+}
+
+const randomColor = () => {
+    const r = randomNumber(0,255)
+    const g = randomNumber(0,255)
+    const b = randomNumber(0,255)
+
+    return `rgb(${r},${g},${b})`
+}
+
+const food = {
+    x: randomPosition(),
+    y: randomPosition(),
+    color: randomColor()
+}
+
+let direction , loopId
+
+const drawFood = () => {
+    const { x, y, color} = food
+
+    ctx.shadowColor = "red"
+    ctx.shadowBlur = 9
+    ctx.fillStyle = color
+    ctx.fillRect ( x, y, size , size)
+    ctx.shadowBlur = 0
+}
 const drawSnake = () => {    // função que desenha a snake
     ctx.fillStyle = "#ddd";     // Adiciona a cor da snake
 
@@ -23,9 +55,9 @@ const drawSnake = () => {    // função que desenha a snake
 }
 
 const moveSnake = () => {
-    if (!direction) return
+    if (!direction) return // se o "direction" for vazio, pula todo o escopo
     
-    const head = snake[snake.length -1];
+    const head = snake[snake.length -1];  // pega o ultimo valor do array 'a cabeça"
 
     if(direction == "right") {
         snake.push( { x: head.x + size, y: head.y})
@@ -40,13 +72,70 @@ const moveSnake = () => {
     if(direction == "up") {
         snake.push( { x: head.x, y: head.y - size})
     }
-    snake.shift();
+
+    snake.shift(); //exclui o ultimo valor do array
 
 }
 
-setInterval(() => {
-    ctx.clearRect(0,0,600,600)
+const drawGrid = () => {
+    ctx.lineWidth = 1
+    ctx.strokeStyle = "#252525"
 
-    moveSnake();
-    drawSnake(); // chama a função de desenhar a snake.
-}, 300)
+    for ( let i = 30; i < canvas.width; i += 30 ){
+        ctx.beginPath()
+        ctx.lineTo(i, 0)
+        ctx.lineTo(i, 600)
+        ctx.stroke()
+
+        ctx.beginPath()
+        ctx.lineTo(0, i)
+        ctx.lineTo(600, i)
+        ctx.stroke()
+
+    }
+}
+
+const checkEat = () => {
+    const  head = snake [snake.length -1]
+
+    if ( head.x == food.x && head.y == food.y) {
+        snake.push(head)
+
+        food.x = randomPosition()
+        food.y = randomPosition()
+        food.color = randomColor()
+    }
+}
+
+
+const gameLoop = () => {    // função que faz o jogo rodar
+    clearInterval(loopId)  //limpa o timeout antes de inicializa-lo novamente
+    
+    ctx.clearRect(0,0,600,600);  // faz a limpeza da tela
+    drawGrid();    //Desenha o grid
+    drawFood();
+    moveSnake();   //move a snake
+    drawSnake();   // chama a função de desenhar e redefinir valores da snake.
+    checkEat();
+
+    loopId = setTimeout (() => {
+        gameLoop();  // a função SE AUTO CHAMA e fica em loop
+    },300)
+}
+
+gameLoop();
+
+document.addEventListener("keydown",({key})=>{
+    if (key == "ArrowRight" && direction != "left") {
+        direction = "right"
+    }
+    if (key == "ArrowLeft" && direction != "right") {
+        direction = "left"
+    }
+    if (key == "ArrowUp" && direction != "down") {
+        direction = "up"
+    }
+    if (key == "ArrowDown" && direction != "up") {
+        direction = "down"
+    }
+});
