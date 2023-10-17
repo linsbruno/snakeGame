@@ -1,6 +1,8 @@
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 
+const audio = new Audio("../assets/pluss.wav")
+
 const size = 30; //definição do tamanho padrão de cada elemento da Snake
 
 const snake = [
@@ -100,11 +102,39 @@ const checkEat = () => {
 
     if ( head.x == food.x && head.y == food.y) {
         snake.push(head)
+        audio.play()
 
-        food.x = randomPosition()
-        food.y = randomPosition()
+        let x = randomPosition()
+        let y = randomPosition()
+
+        while (snake.find((position) => position.x == x && position.y == y)){
+            x = randomPosition();
+            y = randomPosition();
+        }
+        food.x = x;
+        food.y = y;
         food.color = randomColor()
     }
+}
+
+const checkColidion = () => {
+    const head = snake[snake.length -1]
+    const canvasLimit = canvas.width - size
+    const neckIndex = snake.length - 2
+
+    const wallColision = head.x < 0 ||  head.x > canvasLimit || head.y < 0 || head.y > canvasLimit
+
+    const selfColision = snake.find((position, index) => {
+        return index < neckIndex && position.x == head.x && position.y == head.y
+    })
+
+    if (wallColision || selfColision) {
+        alert ("voce perdeu")
+    }
+}
+
+const gameOver = () => {
+    direction = undefined
 }
 
 
