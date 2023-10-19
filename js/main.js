@@ -3,12 +3,21 @@ const ctx = canvas.getContext("2d");
 
 const audio = new Audio("../assets/pluss.wav")
 
+const score = document.querySelector(".score--value")
+const final = document.querySelector(".final-score > span")
+const menu = document.querySelector(".menu-screen")
+const buttonPlay = document.querySelector(".btn-play")
+
 const size = 30; //definição do tamanho padrão de cada elemento da Snake
 
-const snake = [
-    { x: 0, y: 0},
+let snake = [
+    { x: 270, y: 270},
      //Array com cada "tamanho" da Snake
 ];
+
+const incrementScore = () => {
+    score.innerText = +score.innerText + 10
+}
 
 const randomNumber = (min , max ) => {
     return Math.round(Math.random() * (max - min) + min)
@@ -45,11 +54,11 @@ const drawFood = () => {
     ctx.shadowBlur = 0
 }
 const drawSnake = () => {    // função que desenha a snake
-    ctx.fillStyle = "#ddd";     // Adiciona a cor da snake
+    ctx.fillStyle = "#ff0";     // Adiciona a cor da snake
 
     snake.forEach((position, index) => {
         if (index == snake.length -1) {
-            ctx.fillStyle = "#fff"
+            ctx.fillStyle = "#e5e619"
         }                             // percorre todo array da Snake e SE encoontrar o ultimo, muda a cor da snake
 
         ctx.fillRect(position.x, position.y, size, size);  // Desenha a snake na tela
@@ -101,6 +110,7 @@ const checkEat = () => {
     const  head = snake [snake.length -1]
 
     if ( head.x == food.x && head.y == food.y) {
+        incrementScore()
         snake.push(head)
         audio.play()
 
@@ -117,7 +127,7 @@ const checkEat = () => {
     }
 }
 
-const checkColidion = () => {
+const checkColision = () => {
     const head = snake[snake.length -1]
     const canvasLimit = canvas.width - size
     const neckIndex = snake.length - 2
@@ -129,12 +139,16 @@ const checkColidion = () => {
     })
 
     if (wallColision || selfColision) {
-        alert ("voce perdeu")
+        gameOver()
     }
 }
 
 const gameOver = () => {
     direction = undefined
+
+    menu.style.display ="flex"
+    final.innerText = score.innerText
+    canvas.style.filter = "blur(5px)"
 }
 
 
@@ -147,6 +161,7 @@ const gameLoop = () => {    // função que faz o jogo rodar
     moveSnake();   //move a snake
     drawSnake();   // chama a função de desenhar e redefinir valores da snake.
     checkEat();
+    checkColision();
 
     loopId = setTimeout (() => {
         gameLoop();  // a função SE AUTO CHAMA e fica em loop
@@ -169,3 +184,11 @@ document.addEventListener("keydown",({key})=>{
         direction = "down"
     }
 });
+
+buttonPlay.addEventListener("click",() => {
+    score.innerText ="00"
+    menu.style.display ="none"
+    canvas.style.filter = "none"
+
+    snake = [{x:270, y:270}]
+})
